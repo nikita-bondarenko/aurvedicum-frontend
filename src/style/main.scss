@@ -1,0 +1,34 @@
+@import 'mixins.scss';
+@import 'variables.scss';
+
+.back {
+    z-index: -1;
+    @include fix;
+
+    &::before {
+        content: '';
+        @include modalBack;
+    }
+
+    text-align: center;
+
+    img {
+        object-fit: fill;
+    }
+
+}
+
+.main {
+    display: flex;
+    background-color: $colorBright;
+
+    &__right {
+        flex: 1 0 80%;
+        border: 1px solid red;
+    }
+
+    &__left {
+        flex: 1 0 20%;
+        border: 1px solid black;
+    }
+}

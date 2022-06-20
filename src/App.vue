@@ -1,30 +1,14 @@
-<template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+<template lang="pug">
+DataHeader
+router-view
+div.back
+  img(:src="BACK_IMG_URL")
 </template>
-
+<script setup>
+/* eslint-disable no-unused-vars */
+import DataHeader from '@/components/dataBase/DataHeader.vue'
+import { BACK_IMG_URL } from '@/config'
+</script>
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
+@import './style/style.scss';
 </style>

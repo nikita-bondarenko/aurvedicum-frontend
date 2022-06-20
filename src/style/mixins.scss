@@ -1,0 +1,54 @@
+@import 'variables.scss';
+
+@mixin clearListStyles {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+@mixin fix {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+}
+
+@mixin modalBack {
+    @include fix;
+    background-color: rgba(0, 0, 0, .5)
+}
+
+@mixin bigFont {
+    font-family: $fontFamilyMain;
+    font-size: 36px;
+    line-height: 1.5em;
+    font-weight: 700px;
+}
+
+@mixin middleFont {
+    font-family: $fontFamilyMain;
+    font-size: 24px;
+    line-height: 1.2em;
+    font-weight: 500px;
+}
+
+@mixin textFont {
+    font-family: $fontFamilySmall;
+    font-size: 16px;
+    line-height: 1.2em;
+    font-weight: 400px;
+}
+
+@mixin smallFont {
+    font-family: $fontFamilySmall;
+    font-size: 12px;
+    line-height: 1.2em;
+    font-weight: 500px;
+}
+
+@mixin flexCenterBetween {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
