@@ -6,11 +6,7 @@
       class="form__input"
       v-model="value"
       :type="
-        placeholderText.includes('телефон')
-          ? 'tel'
-          : placeholderText.includes('цену')
-          ? 'number'
-          : 'text'
+       inputType
       "
       :placeholder="placeholderText"
     />

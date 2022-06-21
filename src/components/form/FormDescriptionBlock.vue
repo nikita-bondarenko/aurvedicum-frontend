@@ -1,16 +1,14 @@
 <template lang="pug">
-FormField(:label-text="'Информация о товаре'" ref="parentElement")
+div
   ul
     li( v-for="(item, index) in descArray" )
       FormDescription(  :id="item.id" :key="item.id"
-   v-model:list="descArray")
-
-  button( v-if="descArray.length < 11" type="button" @click="addDesc") Добавить описание
+    v-model:list="descArray")
+  button.form__button.button( v-if="descArray.length < 11" type="button" @click="addDesc") Добавить описание
 </template>
 <script setup>
 /* eslint-disable no-unused-vars */
 import FormDescription from '@/components/form/FormDescription.vue'
-import FormField from '@/components/form/FormField.vue'
 import { reactive, ref, defineEmits, watch, computed } from 'vue'
 const emit = defineEmits(['update:modelValue'])
 const descArray = ref([])
@@ -18,7 +16,6 @@ const addDesc = () => {
   const id =
     descArray.value.reduce((acc, item) => (item.id > acc ? item.id : acc), 0) +
     1
-  console.log(id)
   const desc = reactive({ text: '', header: '', id })
   descArray.value.push(desc)
 }

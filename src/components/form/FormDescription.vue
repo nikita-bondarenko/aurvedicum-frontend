@@ -1,11 +1,10 @@
 <template lang="pug">
-div
+div.form__block
   FormInput( :placeholder-text="'Введите заголовок'"
 v-model.trim="descData.header")
-  FormTextarea( :placeholder-text="'Введитетекст'"
+  FormTextarea( :placeholder-text="'Введите текст'"
 v-model.trim="descData.text" )
-
-  button( v-if="list.length > 1" @click="deleteItem" type="button") Удалить
+  DeleteButton.form__close( v-if="list.length > 1" @click="deleteItem" )
 
 </template>
 <script setup>
@@ -13,6 +12,7 @@ v-model.trim="descData.text" )
 import { reactive, ref, defineProps, defineEmits, watch } from 'vue'
 import FormInput from '@/components/form/FormInput.vue'
 import FormTextarea from '@/components/form/FormTextarea.vue'
+import DeleteButton from '@/components/DeleteButton.vue'
 
 const emit = defineEmits(['update:list'])
 const props = defineProps(['list', 'id'])
@@ -36,4 +36,4 @@ watch(
   }
 )
 </script>
-<style lang="SCSS"></style>
+<style lang="scss"></style>

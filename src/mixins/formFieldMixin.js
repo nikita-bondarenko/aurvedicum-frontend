@@ -2,7 +2,7 @@
 import FormField from '@/components/form/FormField.vue';
 
 export default {
-  props: ['placeholderText', 'modelValue', 'labelText', 'errorText'],
+  props: ['placeholderText', 'modelValue', 'labelText', 'errorText', 'inputType'],
   emits: ['update:modelValue'],
   components: { FormField },
   computed: {
