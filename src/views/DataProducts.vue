@@ -27,7 +27,7 @@ import DataChangeProduct from '@/components/dataBase/DataChangeProduct.vue'
 import DataDeleteProduct from '@/components/dataBase/DataDeleteProduct.vue'
 
 const { getProducts } = useApi()
-const products = ref(null)
+const products = ref({ items: [] })
 const isModalOpen = ref(false)
 const isCreateOpen = ref(false)
 const isChangeOpen = ref(false)
@@ -56,5 +56,7 @@ watch(
 )
 
 getProducts().then((res) => (products.value = res.data))
+
+watch(() => products.value, () => console.log(products.value))
 </script>
 <style lang="SCSS"></style>

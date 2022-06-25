@@ -1,5 +1,5 @@
 <template>
-  <button class="close" type="button" @click="emit('click')">
+  <button type="button" class="close">
     <svg width="20" height="20" fill="currentColor">
       <g id="color" />
       <g id="hair" />
@@ -37,9 +37,6 @@
 </template>
 <script setup>
 /* eslint-disable no-unused-vars */
-import { defineEmits } from 'vue'
-
-const emit = defineEmits(['click'])
 </script>
 <style lang="scss">
 @import '@/style/variables.scss';

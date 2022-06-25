@@ -4,4 +4,4 @@
 <script setup>
 /* eslint-disable no-unused-vars */
 </script>
-<style lang="SCSS"></style>
+<style lang="scss"></style>

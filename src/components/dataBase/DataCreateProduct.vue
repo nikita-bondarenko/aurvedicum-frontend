@@ -1,121 +1,214 @@
 <template lang="pug">
 h2.content__title Создание нового товара
-form.form( @submit.prevent="sendForm()" )
+form.form#create( @submit.prevent="sendForm()" )
   FormFieldset(:legend="'Название'")
     FormInput( v-model.trim="formData.name"
-        :placeholder-text="'Введите название'"
-        :input-type="'text'"
+      :placeholder-text="'Введите название'"
+      :input-type="'text'"
     )
-  FormFieldset(:legend="'Цена'")
-    FormInput( v-model.string="formData.price"
-    :placeholder-text="'Введите цену товара'"
-    :input-type="'number'"
-)
+  FormFieldset(:legend="'Цена за объем/вес'")
+    FormMultiBlock( @change="updateInputGroup"  v-model="formData.volumes" :btn-text="'Добавить объем/вес'" :field="'volumes'" )
+
   FormFieldset(:legend="'Категория'")
-    FormSelect(v-model="formData.categoryId" :items="categories"
-:placeholder-text="'Выберите категорию товара'" )
+    FormMultiBlock( @change="updateInputGroup"  v-model="formData.categories" :btn-text="'Добавить категорию'" :field="'categories'" )
 
   FormFieldset(:legend="'Бренд'")
-    FormSelect(v-model="formData.brandId" :items="brands"
-:placeholder-text="'Выберите бренд'" )
+    FormMultiBlock( @change="updateInputGroup"  v-model="formData.brands" :btn-text="'Добавить бренд'" :field="'brands'" )
 
-  FormInput( v-model.trim="formData.imageUrl" :placeholder-text="'Вставьте ссылку на изображение товара'"
-:label-text="'Изображение'"
-:input-type="'text'"
+  FormFieldset(:legend="'Изображения'")
+    FormMultiBlock( @change="updateInputGroup"  v-model="formData.images" :btn-text="'Добавить изображение'" :field="'images'" )
 
-)
   FormFieldset(:legend="'Описание товара'")
-    FormDescriptionBlock( v-model="formData.description")
-  button.form__submit.button.button-primary(type="submit") Создать
-  span(v-if="isEmptyError") Товар не помещен в хранилище. Необходимо заполнить все поля.
+    FormMultiBlock( @change="updateInputGroup"  v-model="formData.description" :btn-text="'Добавить описание'"  :field="'description'" )
 
+  PrimeBtn(:class="{'button--disabled': isSending}" :text="'Создать'")
+    BaseLoader(v-if="isSending")
+BaseModal(v-model:open="isEmptyError")
+  .form__common-error Не удалось создать товар. Необходимо заполнить корректно все поля.
+BaseModal(v-model:open="isSendingFailed")
+  .form__common-error Не удалось создать товар. Проверьте интернет соединение и попробуйте еще раз.
+BaseModal(v-model:open="isSendingSuccessfull")
+  .form__label Товар успешно добавлен в хранилище.
 </template>
 <script setup>
 /* eslint-disable no-unused-vars */
 
 import FormInput from '@/components/form/FormInput.vue'
-import FormSelect from '@/components/form/FormSelect.vue'
-import FormDescriptionBlock from '@/components/form/FormDescriptionBlock.vue'
+import FormMultiBlock from '@/components/form/FormMultiBlock.vue'
+import PrimeBtn from '@/components/PrimeBtn.vue'
+
 import FormFieldset from '../form/FormFieldset.vue'
-
+import BaseModal from '../BaseModal.vue'
 import useApi from '@/composible/useApi'
-import { reactive, ref, isRef } from 'vue'
-const formData = reactive({
-  name: '',
-  price: '',
-  categoryId: '',
-  brandId: '',
-  imageUrl: ''
-})
-const { getCategories, getBrands, postProduct } = useApi()
-const categories = ref([])
-const brands = ref([])
+import useHelpers from '@/composible/useHelpers'
+import BaseLoader from '@/components/BaseLoader.vue'
+
+import { reactive, ref, isRef, onMounted, watch } from 'vue'
+const formData = reactive(
+  JSON.parse(localStorage.getItem('createFormData')) || {
+    name: '',
+    volumes: [],
+    description: [],
+    categories: [],
+    brands: [],
+    images: []
+  }
+)
+const { postProduct } = useApi()
+const { getInputGroup, validateImageUrl } = useHelpers()
 const isEmptyError = ref(false)
-const sendForm = () => {
-  isEmptyError.value = false
-  console.log(isEmptyError.value)
-  const obj = formData
-  Object.keys(obj).forEach((key) => {
-    if (typeof obj[key] === 'object') {
-      obj[key].forEach((item) => {
-        if (Object.values(item).some((elem) => elem.length === 0)) {
-          isEmptyError.value = true
-        }
-      })
-    } else {
-      if (!obj[key].length > 0) {
-        isEmptyError.value = true
-      }
-    }
-  })
+const inputGroup = ref(null)
+const addElementError = (item) => {
+  item.nextElementSibling.textContent = 'Недопустимое значение'
 
-  // if (isEmptyError.value) return
+  item.classList.add('form__label--error')
+}
+const removeElementError = (item) => {
+  item.nextElementSibling.textContent = ''
 
-  console.log(obj)
-
-  // postProduct(obj).then((res) => console.log(res.status))
+  item.classList.remove('form__label--error')
+}
+const updateInputGroup = () => {
+  inputGroup.value = getInputGroup('create')
 }
 
-getCategories().then((res) => (categories.value = res.data.items))
-getBrands().then((res) => (brands.value = res.data.items))
+const isSending = ref(false)
+const isSendingFailed = ref(false)
+const isSendingSuccessfull = ref(false)
+
+const sendForm = async () => {
+  isEmptyError.value = false
+
+  if (
+    getInputGroup('create')
+      .reduce((array, element) => [...array, element.value], [])
+      .some((item) => item === '')
+  ) {
+    getInputGroup('create').forEach((item) => {
+      if (item.placeholder) {
+        if (
+          item.placeholder.includes('изображ') &&
+          !validateImageUrl(item.value)
+        ) {
+          addElementError(item)
+        }
+      }
+      if (!item.value) addElementError(item)
+    })
+    isEmptyError.value = true
+  }
+
+  if (!isEmptyError.value) {
+    try {
+      isSending.value = true
+      isSendingFailed.value = false
+      const res = await postProduct(formData)
+      console.log(res)
+      if (res) {
+        isSendingSuccessfull.value = true
+        isSending.value = false
+      }
+    } catch (err) {
+      isSendingFailed.value = true
+      isSending.value = false
+    }
+  }
+}
+
+onMounted(() => updateInputGroup())
+
+watch(
+  () => Object.assign({}, formData),
+  () => updateInputGroup()
+)
+
+watch(
+  () => inputGroup.value,
+  (value) => {
+    value.forEach((item) => (item.value ? removeElementError(item) : 1))
+    localStorage.setItem('createFormData', JSON.stringify(formData))
+  }
+)
 </script>
 <style lang="scss">
 @import '@/style/variables.scss';
 @import '@/style/mixins.scss';
 
+.button {
+  position: relative;
+  &--disabled {
+    pointer-events: none;
+    cursor: none;
+  }
+}
+
 .form {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+  &__label--error {
+    border: 4px solid #c73d00 !important;
+    &:hover {
+      border-color: #222;
+    }
+  }
+
+  &__common-error {
+    color: $red;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  &__list {
+    .form__block {
+      margin-bottom: 13px;
+    }
+  }
+
+  &__input {
+    &::placeholder {
+      color: $colorTextLight;
+    }
+  }
+
+  &__select {
+    color: $colorTextLight;
+    background-color: $lightGray;
+    border: 1px solid transparent;
+    &:focus-visible {
+      border-radius: 0;
+      outline: none;
+    }
+
+    &:hover {
+      border-color: #222;
+    }
+  }
+
   &__block {
     position: relative;
+    width: 100%;
+    &-title {
+      text-transform: uppercase;
+      color: $green;
+      padding: 0;
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-align: center;
+    }
   }
 
   &__close {
     position: absolute;
-    right: -50px;
-    top: 50%;
-    transform: stranslateX(50%);
   }
 
   &__legend {
-    color: $green;
-  }
-
-  &__button {
-    @include btnTransition;
-    color: $green;
-    border: 4px solid $green;
-    &:hover {
-      border-color: $black;
-      color: $black;
-    }
-  }
-  &__submit {
-    @include btnTransition;
-
-    color: $colorBright;
-    background-color: $green;
-    &:hover {
-      background-color: $black;
-    }
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
   }
 }
 </style>

@@ -15,9 +15,9 @@ export default function () {
   }
 
   const postProduct = async (body) => {
-    const res = await axios.post(`${API_URL}/api/products`, body, {
+    const res = await axios.post(`${API_URL}/api/products`, body,
       headers
-    })
+    )
     return res
   }
 
@@ -35,7 +35,29 @@ export default function () {
     return res
   }
 
+  const postImage = async (body) => {
+    const res = await axios.post(`${API_URL}/api/upload`, body, {
+      headers: {
+        ...headers,
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    return res
+  }
+
+  const deleteImage = async (url) => {
+    const res = await axios.post(`${API_URL}/api/upload/delete`, {
+      headers,
+      url
+    })
+
+    return res
+  }
+
   return {
+    deleteImage,
+    postImage,
     postProduct,
     getBrands,
     getCategories,

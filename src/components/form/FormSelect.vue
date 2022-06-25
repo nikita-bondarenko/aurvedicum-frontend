@@ -1,7 +1,7 @@
 <template lang="">
   <FormField :label-text="labelText">
     <select class="form__select" v-model="selected">
-      <option disabled selected hidden value="">
+      <option class="select-placeholder" disabled selected hidden value="">
         {{ placeholderText }}
       </option>
       <option v-for="item in items" :key="item.id" :value="item.id">
