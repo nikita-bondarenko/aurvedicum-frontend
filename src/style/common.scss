@@ -31,3 +31,13 @@ a {
 ul {
     @include clearListStyles
 }
+
+.error {
+    @include message;
+    color: $red;
+}
+
+.good-message {
+    @include message;
+    color: $green;
+}

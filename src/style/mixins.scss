@@ -58,3 +58,9 @@
     transition-duration: .2s;
     transition-timing-function: ease-in-out;
 }
+
+@mixin message {
+    max-width: 320px;
+    text-align: center;
+    font-weight: 600;
+}

@@ -21,6 +21,20 @@ export default function () {
     return res
   }
 
+  const deleteProduct = async (id) => {
+    const res = await axios.delete(`${API_URL}/api/products/${id}`,
+      headers
+    )
+    return res
+  }
+
+  const patchProduct = async (body) => {
+    const res = await axios.patch(`${API_URL}/api/products/${body.id}`, body,
+      headers
+    )
+    return res
+  }
+
   const getCategories = async () => {
     const res = await axios.get(`${API_URL}/api/categories`, {
       headers
@@ -35,29 +49,9 @@ export default function () {
     return res
   }
 
-  const postImage = async (body) => {
-    const res = await axios.post(`${API_URL}/api/upload`, body, {
-      headers: {
-        ...headers,
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-
-    return res
-  }
-
-  const deleteImage = async (url) => {
-    const res = await axios.post(`${API_URL}/api/upload/delete`, {
-      headers,
-      url
-    })
-
-    return res
-  }
-
   return {
-    deleteImage,
-    postImage,
+    patchProduct,
+    deleteProduct,
     postProduct,
     getBrands,
     getCategories,

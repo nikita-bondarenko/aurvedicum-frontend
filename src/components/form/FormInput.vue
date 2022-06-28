@@ -4,10 +4,8 @@
     <input
       @input="updateErrorStatus"
       class="form__input"
-      v-model="value"
-      :type="
-       inputType
-      "
+      v-model.trim="value"
+      :type="inputType"
       :placeholder="placeholderText"
     />
   </FormField>

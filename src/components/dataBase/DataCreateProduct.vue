@@ -1,63 +1,105 @@
 <template lang="pug">
-h2.content__title Создание нового товара
-form.form#create( @submit.prevent="sendForm()" )
-  FormFieldset(:legend="'Название'")
-    FormInput( v-model.trim="formData.name"
-      :placeholder-text="'Введите название'"
-      :input-type="'text'"
-    )
-  FormFieldset(:legend="'Цена за объем/вес'")
-    FormMultiBlock( @change="updateInputGroup"  v-model="formData.volumes" :btn-text="'Добавить объем/вес'" :field="'volumes'" )
+BaseModal(v-model:open="isOpen")
+  h2.content__title {{ window === 'create' ? 'Создание нового товара' : 'Изменение товара' }}
+  form.form#create( @submit.prevent="sendForm()" )
+    FormFieldset(:legend="'Название'")
+      FormInput( v-model.trim="formData.name"
+        :placeholder-text="'Введите название'"
+        :input-type="'text'"
+      )
+    FormFieldset(v-for="item in sections" :legend="item.legend")
+      FormMultiBlock( @change="updateInputGroup" v-model="formData[item.section]"
+:btn-text="item.btnText" :field="item.section" )
+    PrimeBtn(:class="{ 'button--disabled': isSending }" :text="window === 'create' ? 'Создать' : 'Изменить'")
+      BaseLoader(v-if="isSending")
+      BaseMessage(v-model:open ="isEmptyError" :text="FILL_MESSAGE")
+      BaseMessage(v-model:open ="isSendingFailed" :text="CONNECT_MESSAGE")
+      BaseMessage(v-if="window === 'create'" v-model:open ="isSendingSuccessfull" :text="SUCCESS_MESSAGE+'создан.'" :type="'success'")
 
-  FormFieldset(:legend="'Категория'")
-    FormMultiBlock( @change="updateInputGroup"  v-model="formData.categories" :btn-text="'Добавить категорию'" :field="'categories'" )
-
-  FormFieldset(:legend="'Бренд'")
-    FormMultiBlock( @change="updateInputGroup"  v-model="formData.brands" :btn-text="'Добавить бренд'" :field="'brands'" )
-
-  FormFieldset(:legend="'Изображения'")
-    FormMultiBlock( @change="updateInputGroup"  v-model="formData.images" :btn-text="'Добавить изображение'" :field="'images'" )
-
-  FormFieldset(:legend="'Описание товара'")
-    FormMultiBlock( @change="updateInputGroup"  v-model="formData.description" :btn-text="'Добавить описание'"  :field="'description'" )
-
-  PrimeBtn(:class="{'button--disabled': isSending}" :text="'Создать'")
-    BaseLoader(v-if="isSending")
-BaseModal(v-model:open="isEmptyError")
-  .form__common-error Не удалось создать товар. Необходимо заполнить корректно все поля.
-BaseModal(v-model:open="isSendingFailed")
-  .form__common-error Не удалось создать товар. Проверьте интернет соединение и попробуйте еще раз.
-BaseModal(v-model:open="isSendingSuccessfull")
-  .form__label Товар успешно добавлен в хранилище.
 </template>
 <script setup>
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars  */
+/* eslint-disable indent */
 
 import FormInput from '@/components/form/FormInput.vue'
 import FormMultiBlock from '@/components/form/FormMultiBlock.vue'
 import PrimeBtn from '@/components/PrimeBtn.vue'
 
 import FormFieldset from '../form/FormFieldset.vue'
-import BaseModal from '../BaseModal.vue'
 import useApi from '@/composible/useApi'
 import useHelpers from '@/composible/useHelpers'
 import BaseLoader from '@/components/BaseLoader.vue'
+import BaseMessage from '@/components/BaseMessage.vue'
+import {
+  reactive,
+  ref,
+  onMounted,
+  watch,
+  defineEmits,
+  defineProps,
+  computed
+} from 'vue'
+import { FILL_MESSAGE, CONNECT_MESSAGE, SUCCESS_MESSAGE } from '@/config'
+import BaseModal from '../BaseModal.vue'
 
-import { reactive, ref, isRef, onMounted, watch } from 'vue'
-const formData = reactive(
-  JSON.parse(localStorage.getItem('createFormData')) || {
-    name: '',
-    volumes: [],
-    description: [],
-    categories: [],
-    brands: [],
-    images: []
-  }
-)
-const { postProduct } = useApi()
-const { getInputGroup, validateImageUrl } = useHelpers()
+const emit = defineEmits(['update:isModalOpen'])
+const props = defineProps({
+  window: {
+    type: String,
+    default: 'create'
+  },
+  isModalOpen: Boolean
+})
+const defaultProperties = {
+  name: '',
+  volumes: [],
+  categories: [],
+  brands: [],
+  images: [],
+  description: []
+}
+
+const formData =
+  props.window === 'create'
+    ? reactive(
+        JSON.parse(localStorage.getItem('createFormData')) || defaultProperties
+      )
+    : reactive(
+        JSON.parse(localStorage.getItem('changeFormData')) || defaultProperties
+      )
+
+const sectionsData = {
+  section: ['volumes', 'categories', 'brands', 'images', 'description'],
+  btnText: [
+    'Добавить объем/вес',
+    'Добавить категорию',
+    'Добавить бренд',
+    'Добавить изображение',
+    'Добавить раздел'
+  ],
+  legend: [
+    'Цена за объем/вес',
+    'Категория',
+    'Бренд',
+    'Изображения',
+    'Описание товара'
+  ]
+}
+
+const { postProduct, patchProduct } = useApi()
+const { getInputGroup, validateImageUrl, parseObject } = useHelpers()
+const sections = parseObject(sectionsData)
 const isEmptyError = ref(false)
 const inputGroup = ref(null)
+const isOpen = computed({
+  get() {
+    return props.isModalOpen
+  },
+  set(value) {
+    emit('update:isModalOpen', value)
+    return value
+  }
+})
 const addElementError = (item) => {
   item.nextElementSibling.textContent = 'Недопустимое значение'
 
@@ -99,11 +141,14 @@ const sendForm = async () => {
   }
 
   if (!isEmptyError.value) {
+    isSending.value = true
+    isSendingFailed.value = false
+
     try {
-      isSending.value = true
-      isSendingFailed.value = false
-      const res = await postProduct(formData)
-      console.log(res)
+      const res =
+        props.window === 'create'
+          ? postProduct(formData)
+          : patchProduct(formData)
       if (res) {
         isSendingSuccessfull.value = true
         isSending.value = false
@@ -123,10 +168,34 @@ watch(
 )
 
 watch(
+  () => formData,
+  () => {
+    props.window === 'create'
+      ? localStorage.setItem('createFormData', JSON.stringify(formData))
+      : localStorage.setItem('changeFormData', JSON.stringify(formData))
+  },
+  { deep: true }
+)
+
+watch(
   () => inputGroup.value,
   (value) => {
     value.forEach((item) => (item.value ? removeElementError(item) : 1))
-    localStorage.setItem('createFormData', JSON.stringify(formData))
+  }
+)
+
+watch(
+  () => isSendingSuccessfull.value,
+  (value) => {
+    if (value === false) {
+      isOpen.value = value
+      document.body.style.overflow = 'scroll'
+      document.body.style.paddingRight = 'inherit'
+
+      props.window === 'create'
+        ? localStorage.removeItem('createFormData')
+        : localStorage.removeItem('changeFormData')
+    }
   }
 )
 </script>
@@ -136,79 +205,10 @@ watch(
 
 .button {
   position: relative;
+
   &--disabled {
     pointer-events: none;
     cursor: none;
-  }
-}
-
-.form {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-
-  &__label--error {
-    border: 4px solid #c73d00 !important;
-    &:hover {
-      border-color: #222;
-    }
-  }
-
-  &__common-error {
-    color: $red;
-    text-align: center;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-
-  &__list {
-    .form__block {
-      margin-bottom: 13px;
-    }
-  }
-
-  &__input {
-    &::placeholder {
-      color: $colorTextLight;
-    }
-  }
-
-  &__select {
-    color: $colorTextLight;
-    background-color: $lightGray;
-    border: 1px solid transparent;
-    &:focus-visible {
-      border-radius: 0;
-      outline: none;
-    }
-
-    &:hover {
-      border-color: #222;
-    }
-  }
-
-  &__block {
-    position: relative;
-    width: 100%;
-    &-title {
-      text-transform: uppercase;
-      color: $green;
-      padding: 0;
-      margin-top: 0;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-  }
-
-  &__close {
-    position: absolute;
-  }
-
-  &__legend {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
   }
 }
 </style>

@@ -1,5 +1,6 @@
 <template lang="pug">
 button.subbutton.button( type="button") {{text}}
+  slot
 </template>
 <script setup>
 /* eslint-disable no-unused-vars */

@@ -2,6 +2,7 @@
 @import 'mixins.scss';
 
 .small-button {
+    border: 4px solid $green;
     display: flex;
     justify-content: center;
     height: 30px;
@@ -26,6 +27,7 @@
 }
 
 .button-primary {
+    width: 100%;
     color: $colorBright;
     background-color: $green;
 
@@ -33,6 +35,9 @@
         color: $colorBright;
         background-color: $black;
     }
+}
 
-
+.button-cancel {
+    color: $red;
+    border-color: $red;
 }
