@@ -4,9 +4,7 @@
       :class="{ 'out-content': isOutContent }"
       class="teleport-blackout"
     ></div>
-    <!-- eslint-disable-next-line -->
     <div class="teleport-modal" @click="onOutsideClick">
-      <!-- eslint-disable-next-line -->
       <div
         ref="contentElement"
         @mouseleave="isOutContent = true"
@@ -33,6 +31,7 @@ export default defineComponent({
   props: {
     open: { type: Boolean }
   },
+  emits: ['update:open'],
   components: { DeleteButton },
   setup(props, { emit: $emit }) {
     const contentElement = ref(null)
@@ -98,7 +97,7 @@ export default defineComponent({
 
   z-index: 1010;
   overflow: auto;
-  overflow-y: scroll;
+  // overflow-y: scroll;
   display: flex;
   justify-content: center;
   position: fixed;

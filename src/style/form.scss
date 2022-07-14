@@ -34,6 +34,7 @@
         color: $colorTextLight;
         background-color: $lightGray;
         border: 1px solid transparent;
+        transition: border .2s ease-in-out;
 
         &:focus-visible {
             border-radius: 0;
@@ -41,8 +42,9 @@
         }
 
         &:hover {
-            border-color: #222;
+            border-color: $green;
         }
+
     }
 
     &__block {
@@ -103,7 +105,7 @@
             left: -10px;
             bottom: -5px;
             position: absolute;
-            opacity: 0.05;
+            opacity: 0.12;
             background-color: transparent;
             @include btnTransition;
         }

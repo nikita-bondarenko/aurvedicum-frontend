@@ -2,8 +2,9 @@
 BaseModal(v-model:open="isOpen")
   .form
     h3.form__title {{ text }}
-    PrimeBtn.button-delete(@click="confirm") Да
-    SubBtn.button-cancel(@click="close") Отмена
+    .uk-flex.uk-flex-around
+      PrimeBtn.button-delete(@click="confirm") Да
+      PrimeBtn.button-cancel(@click="close") Отмена
 </template>
 <script setup>
 /* eslint-disable no-unused-vars */

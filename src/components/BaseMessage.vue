@@ -1,12 +1,13 @@
 <template lang="pug">
 BaseModal(v-model:open="isOpen")
-  .error(v-if="type === 'error'") {{ 'Не удалось совершить действие. '+ text}}
+  .error(v-if="type === 'error'") {{text}}
   .good-message(v-else) {{text}}
 </template>
 <script setup>
 /* eslint-disable no-unused-vars */
 import BaseModal from './BaseModal.vue'
-import { defineProps, defineEmits, computed } from 'vue'
+import { defineProps, defineEmits, computed, watch, onMounted } from 'vue'
+
 const props = defineProps({
   open: {
     type: Boolean,

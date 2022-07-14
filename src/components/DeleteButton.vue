@@ -51,13 +51,15 @@
   position: absolute;
   border-color: transparent;
   background-color: transparent;
+  padding: 0;
+  border: none;
 }
 .close svg {
   position: absolute;
-  top: -2px;
+  top: 0;
   right: 0;
   bottom: 0;
-  left: -2px;
+  left: 0;
 }
 .close::after {
   z-index: -1;

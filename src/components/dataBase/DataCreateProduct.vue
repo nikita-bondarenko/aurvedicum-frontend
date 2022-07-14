@@ -1,7 +1,8 @@
 <template lang="pug">
 BaseModal(v-model:open="isOpen")
   h2.content__title {{ window === 'create' ? 'Создание нового товара' : 'Изменение товара' }}
-  form.form#create( @submit.prevent="sendForm()" )
+  form.form#create( @submit.prevent="sendForm()"
+ )
     FormFieldset(:legend="'Название'")
       FormInput( v-model.trim="formData.name"
         :placeholder-text="'Введите название'"
@@ -10,11 +11,12 @@ BaseModal(v-model:open="isOpen")
     FormFieldset(v-for="item in sections" :legend="item.legend")
       FormMultiBlock( @change="updateInputGroup" v-model="formData[item.section]"
 :btn-text="item.btnText" :field="item.section" )
-    PrimeBtn(:class="{ 'button--disabled': isSending }" :text="window === 'create' ? 'Создать' : 'Изменить'")
+    PrimeBtn(:class="{ 'button--disabled': isSending }"
+ :text="window === 'create' ? 'Создать' : 'Сохранить'")
       BaseLoader(v-if="isSending")
-      BaseMessage(v-model:open ="isEmptyError" :text="FILL_MESSAGE")
-      BaseMessage(v-model:open ="isSendingFailed" :text="CONNECT_MESSAGE")
-      BaseMessage(v-if="window === 'create'" v-model:open ="isSendingSuccessfull" :text="SUCCESS_MESSAGE+'создан.'" :type="'success'")
+      BaseMessage(v-if="isEmptyError" v-model:open ="isEmptyError" :text="FILL_MESSAGE")
+      BaseMessage(v-if="isSendingFailed" v-model:open ="isSendingFailed" :text="CONNECT_MESSAGE")
+      BaseMessage(v-if="isSendingSuccessfull" v-model:open ="isSendingSuccessfull" :text="SUCCESS_MESSAGE" :type="'success'")
 
 </template>
 <script setup>
@@ -42,7 +44,7 @@ import {
 import { FILL_MESSAGE, CONNECT_MESSAGE, SUCCESS_MESSAGE } from '@/config'
 import BaseModal from '../BaseModal.vue'
 
-const emit = defineEmits(['update:isModalOpen'])
+const emit = defineEmits(['update:isModalOpen', 'change'])
 const props = defineProps({
   window: {
     type: String,
@@ -102,11 +104,12 @@ const isOpen = computed({
 })
 const addElementError = (item) => {
   item.nextElementSibling.textContent = 'Недопустимое значение'
-
   item.classList.add('form__label--error')
 }
 const removeElementError = (item) => {
-  item.nextElementSibling.textContent = ''
+  if (item.nextElementSibling) {
+    item.nextElementSibling.textContent = ''
+  }
 
   item.classList.remove('form__label--error')
 }
@@ -144,6 +147,10 @@ const sendForm = async () => {
     isSending.value = true
     isSendingFailed.value = false
 
+    formData.volumes = formData.volumes.sort((a, b) =>
+      a.price < b.price ? -1 : 1
+    )
+
     try {
       const res =
         props.window === 'create'
@@ -163,13 +170,18 @@ const sendForm = async () => {
 onMounted(() => updateInputGroup())
 
 watch(
-  () => Object.assign({}, formData),
-  () => updateInputGroup()
-)
-
-watch(
   () => formData,
-  () => {
+  (value) => {
+    // console.log(value)
+    if (value.volumes.length > 0) {
+      value.volumes.forEach((item) => {
+        if (item.subprice && item.subprice.length < 1) {
+          delete item.subprice
+          console.log(item)
+        }
+      })
+    }
+    updateInputGroup()
     props.window === 'create'
       ? localStorage.setItem('createFormData', JSON.stringify(formData))
       : localStorage.setItem('changeFormData', JSON.stringify(formData))
@@ -195,6 +207,7 @@ watch(
       props.window === 'create'
         ? localStorage.removeItem('createFormData')
         : localStorage.removeItem('changeFormData')
+      emit('change')
     }
   }
 )

@@ -38,6 +38,14 @@
 }
 
 .button-cancel {
-    color: $red;
-    border-color: $red;
+    flex-grow: 1;
+    flex-basis: 50%;
+    background-color: $red;
+
+}
+
+.button-delete {
+    flex-basis: 50%;
+    flex-grow: 1;
+    width: auto;
 }

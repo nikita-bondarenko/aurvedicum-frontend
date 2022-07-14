@@ -3,12 +3,11 @@ export default function () {
     ['input', 'textarea', 'select'].reduce((array, tag) => {
       Array.from(
         document.getElementById(parent).getElementsByTagName(tag)
-      ).forEach((item) => array.push(item))
+      ).forEach((item) => item.type === 'file' ? 1 : array.push(item))
       return array
     }, [])
 
   const validateImageUrl = (url) => {
-    console.log(url)
     if (!url) {
       return false
     }
@@ -32,7 +31,12 @@ export default function () {
     return array
   }
 
+  const formatTime = (ts) => {
+    return new Intl.DateTimeFormat('ru-RU', { dateStyle: 'full', timeStyle: 'short' }).format(ts)
+  }
+
   return {
+    formatTime,
     validateImageUrl,
     getInputGroup,
     parseObject
