@@ -2,13 +2,15 @@
 
 ### See fullsstack app [here](https://github.com/nikita-bondarenko/aurvedicum).
 
-# stack:
+
+### stack:
 
 ### Vue.js 3 (Composition APi mostly)
 ### SCSS
 ### axios
 
-## Project setup
+
+### Project setup
 ```
 npm install
 ```
