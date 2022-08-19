@@ -1,4 +1,10 @@
-# frontend
+# frontend for e-market "Aurvedicum"
+### See fullsstack app [here](https://github.com/nikita-bondarenko/aurvedicum).
+
+## stack:
+### Vue.js 3 (Composition APi mostly)
+### SCSS
+### axios
 
 ## Project setup
 ```
